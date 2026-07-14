@@ -1,7 +1,7 @@
-﻿using System.Reflection.PortableExecutable;
+﻿using System.Net;
+using System.Reflection.PortableExecutable;
 
-List<Person> people = new();
-
+PersonService service = new PersonService();
 while (true)
 {
     ShowMenu();
@@ -12,13 +12,25 @@ while (true)
     switch (menu)
     {
         case "1":
-            people.Add(CreatePerson());
+        service.AddPerson();
             System.Console.WriteLine("\nData berhasil ditambahkan");
             break;
 
-        case "2":
-            PrintPeople(people);
-            break;
+        // case "2":
+        //     PrintPeople(people);
+        //     break;
+
+        // case "3":
+        //     SearchPerson(people);
+        //     break;
+
+        // case "4":
+        //     FindAdult(people);
+        //     break;
+
+        // case "5":
+        //     DeletePerson(people);
+        //     break;
 
         case "0":
             Console.WriteLine("Terima Kasih");
@@ -38,41 +50,16 @@ static void ShowMenu()
     
     1. Tambah Orang
     2. Lihat Semua Orang
+    3. Cari Orang
+    4. Cari Orang yang umurnya lebih dari 20 tahun
+    5. Hapus Orang
     0. Keluar
     """);
 }
 
 
-static Person CreatePerson()
-{
-    Console.Write("Nama : ");
-    string? name = Console.ReadLine();
 
-    Console.Write("Umur : ");
 
-    int age;
-
-    while (!int.TryParse(Console.ReadLine(), out age))
-    {
-        Console.Write("Umur harus angka. Masukkan lagi : ");
-    }
-
-    Console.Write("Tinggi Badan : ");
-
-    double height;
-
-    while (!double.TryParse(Console.ReadLine(), out height))
-    {
-        Console.Write("Tinggi harus angka. Masukkan lagi : ");
-    }
-
-    return new Person
-    {
-        Name = name ?? "",
-        Age = age,
-        Height = height
-    };
-}
 static void PrintPerson(Person person)
 {
     System.Console.WriteLine($"""
@@ -108,3 +95,51 @@ static void PrintPeople(List<Person> people)
     }
 }
 
+static void SearchPerson(List<Person> people)
+{
+    System.Console.Write("Masukkan Nama : ");
+    string? keyword = Console.ReadLine();
+
+    bool ditemukan = false;
+
+    foreach (Person person in people)
+    {
+        if (person.Name.Equals(keyword, StringComparison.OrdinalIgnoreCase))
+        {
+            PrintPerson(person);
+            ditemukan = true;
+        }
+    }
+
+    if (!ditemukan)
+    {
+        System.Console.WriteLine("Data tidak ditemukan");
+    }
+}
+
+static void FindAdult(List<Person> people)
+{
+    Person? person = people.FirstOrDefault(p => p.Age > 20);
+
+    if (person == null)
+    {
+        System.Console.WriteLine("Tidak ada");
+        return;
+    }
+    PrintPerson(person);
+}
+
+static void DeletePerson(List<Person> people)
+{
+    System.Console.WriteLine("Masukkan Nama: ");
+    string? keyword = Console.ReadLine();
+
+    Person? person = people.FirstOrDefault(p => p.Name.Equals(keyword, StringComparison.OrdinalIgnoreCase));
+    if (person == null)
+    {
+        System.Console.WriteLine("Data tidak ditemukan.");
+    }
+    people.Remove(person);
+    System.Console.WriteLine("Data berhasil dihapus");
+
+}
