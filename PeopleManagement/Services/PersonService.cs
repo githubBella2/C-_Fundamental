@@ -1,5 +1,4 @@
 // Mengelola data Person
-List<Person> people = new();
 public class PersonService
 {
     //  Encapsulation
@@ -39,6 +38,89 @@ public class PersonService
         people.Add(person);
 
         Console.WriteLine("Data berhasil ditambahkan.");
+    }
+
+    public void PrintPeople()
+    {
+        // foreach (Person person in people)
+        // {
+        //     System.Console.WriteLine($"""
+        //         ======Biodata======
+        //         Nama            :{person.Name}
+        //         Umur            : {person.Age}
+        //         Tinggi badan    : {person.Height}
+        //         ===================
+        //         """);
+        // }
+
+        // **Reuse method yang sudah ada** 
+        int nomor = 1;
+        foreach (Person person in people)
+        {
+            System.Console.WriteLine($"Orang ke {nomor}");
+            PrintPerson(person);
+            nomor++;
+        }
+    }
+
+    private void PrintPerson(Person person)
+    {
+        System.Console.WriteLine($"""
+======Biodata======
+Nama            :{person.Name}
+Umur            : {person.Age}
+Tinggi badan    : {person.Height}
+===================
+""");
+    }
+
+    public void SearchPerson()
+    {
+        System.Console.Write("Masukkan Nama : ");
+        string? keyword = Console.ReadLine();
+
+        bool ditemukan = false;
+
+        foreach (Person person in people)
+        {
+            if (person.Name.Equals(keyword, StringComparison.OrdinalIgnoreCase))
+            {
+                PrintPerson(person);
+                ditemukan = true;
+            }
+        }
+
+        if (!ditemukan)
+        {
+            System.Console.WriteLine("Data tidak ditemukan");
+        }
+    }
+
+    public void FindAdult()
+    {
+        Person? person = people.FirstOrDefault(p => p.Age > 20);
+
+        if (person == null)
+        {
+            System.Console.WriteLine("Tidak ada");
+            return;
+        }
+        PrintPerson(person);
+    }
+    public void DeletePerson()
+
+    {
+        System.Console.WriteLine("Masukkan Nama: ");
+        string? keyword = Console.ReadLine();
+
+        Person? person = people.FirstOrDefault(p => p.Name.Equals(keyword, StringComparison.OrdinalIgnoreCase));
+        if (person == null)
+        {
+            System.Console.WriteLine("Data tidak ditemukan.");
+        }
+        people.Remove(person);
+        System.Console.WriteLine("Data berhasil dihapus");
+
     }
 
 }
