@@ -50,4 +50,45 @@ public class MedicineService
         return _context.Medicines.FirstOrDefault(m => m.Id == id);
     }
 
+
+    public Medicine? Update(int id, UpdateMedicineRequest request)
+    {
+        Medicine? medicine = _context.Medicines.FirstOrDefault(m => m.Id == id);
+        if (medicine == null)
+        {
+            return null;
+        }
+
+        medicine.Name = request.Name;
+        medicine.Stock = request.Stock;
+        medicine.Price = request.Price;
+
+
+        // _context.Medicines.Update(medicine);
+        _context.SaveChanges();
+
+        return medicine;
+    }
+
+    public bool Delete(int id)
+    {
+        Medicine? medicine = _context.Medicines.FirstOrDefault(m => m.Id == id);
+
+        if (medicine == null)
+        {
+            return false;
+        }
+
+        _context.Medicines.Remove(medicine);
+        _context.SaveChanges();
+
+        return true;
+    }
+
+    public List<Medicine> Search(string keyword)
+    {
+        return _context.Medicines
+        .Where(m => m.Name.Contains(keyword))
+        .ToList();
+    }
 }
