@@ -13,9 +13,11 @@ public class MedicinesController : ControllerBase
 
 
     [HttpGet]
-    public IActionResult Get()
+    // public IActionResult Get(int page =1, int pageSize=10, string sort= "id")
+    public IActionResult Get([FromQuery] MedicineQueryRequest request )
     {
-        var medicines = _medicineService.GetAll();
+        var medicines = _medicineService.GetAll(request);
+        // var medicines = _medicineService.GetAll(page,pageSize,sort);
         return Ok(medicines);
     }
 
@@ -77,8 +79,5 @@ public class MedicinesController : ControllerBase
         var medicines = _medicineService.Search(keyword);
         return Ok(medicines);
     }
-
-
-
 
 }

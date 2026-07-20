@@ -24,10 +24,67 @@ public class MedicineService
     {
         _context = context;
     }
-    public List<Medicine> GetAll()
+    public PagedResult<Medicine> GetAll(MedicineQueryRequest request)
+    // public PagedResult<Medicine> GetAll(int page, int pageSize, string sort)
     {
-        return _context.Medicines.ToList();
-        // return medicines;
+        if (request.Page <= 0)
+            request.Page = 1;
+
+        if (request.PageSize <= 0)
+            request.PageSize = 10;
+
+        if (string.IsNullOrWhiteSpace(request.Sort))
+            request.Sort = "id";
+        int totalData = _context.Medicines.Count();
+
+        IQueryable<Medicine> query = _context.Medicines;
+        // Filter
+        if (!string.IsNullOrWhiteSpace(request.Name))
+        {
+            query = query.Where(m => m.Name.Contains(request.Name));
+        }
+         if (request.MinPrice.HasValue)
+        {
+            query = query.Where(m => m.Price >= request.MinPrice.Value);
+        }
+         if(request.MaxPrice.HasValue)
+        {
+            query = query.Where(m => m.Price <= request.MaxPrice.Value);
+            
+        }
+
+        // Sort / urutkan
+        if (request.Sort.ToLower() == "name")
+        {
+            query = query.OrderBy(m => m.Name);
+        }
+        else if (request.Sort.ToLower() == "price")
+        {
+            query = query.OrderBy(m => m.Price);
+        }
+        else if (request.Sort.ToLower() == "stock")
+        {
+            query = query.OrderBy(m => m.Stock);
+        }
+        else
+        {
+            query = query.OrderBy(m => m.Id);
+        }
+
+
+        List<Medicine> medicines = query
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToList();
+
+        return new PagedResult<Medicine>
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalData = totalData,
+            TotalPages = (int)Math.Ceiling((double)totalData / request.PageSize),
+            Data = medicines
+        };
     }
 
     public Medicine Add(CreateMedicineRequest request)
@@ -49,7 +106,6 @@ public class MedicineService
     {
         return _context.Medicines.FirstOrDefault(m => m.Id == id);
     }
-
 
     public Medicine? Update(int id, UpdateMedicineRequest request)
     {
