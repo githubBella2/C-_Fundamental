@@ -14,7 +14,7 @@ public class MedicinesController : ControllerBase
 
     [HttpGet]
     // public IActionResult Get(int page =1, int pageSize=10, string sort= "id")
-    public IActionResult Get([FromQuery] MedicineQueryRequest request )
+    public IActionResult Get([FromQuery] MedicineQueryRequest request)
     {
         var medicines = _medicineService.GetAll(request);
         // var medicines = _medicineService.GetAll(page,pageSize,sort);
@@ -25,22 +25,9 @@ public class MedicinesController : ControllerBase
     [HttpPost]
     public IActionResult Create(CreateMedicineRequest request)
     {
-        // Validasi Nama
-        if (string.IsNullOrWhiteSpace(request.Name))
+        if (!ModelState.IsValid)
         {
-            return BadRequest("Nama obat wajib diisi");
-        }
-
-        // Validasi Stock
-        if (request.Stock < 0)
-        {
-            return BadRequest("Stock tidak boleh negatif");
-        }
-
-        // Validasi harga
-        if (request.Price <= 0)
-        {
-            return BadRequest("Harga harus lebih dari 0");
+            return BadRequest(ModelState);
         }
 
         var medicine = _medicineService.Add(request);
@@ -61,9 +48,19 @@ public class MedicinesController : ControllerBase
     [HttpPut("{id}")]
     public IActionResult Update(int id, UpdateMedicineRequest request)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
         var medicine = _medicineService.Update(id, request);
+        if (medicine == null)
+        {
+            return NotFound();
+        }
+
         return Ok(medicine);
     }
+
 
     [HttpDelete("{id}")]
     public IActionResult Delete(int id)
