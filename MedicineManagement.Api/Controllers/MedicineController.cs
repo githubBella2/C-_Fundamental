@@ -23,7 +23,7 @@ public class MedicinesController : ControllerBase
 
 
     [HttpPost]
-    public IActionResult Create(CreateMedicineRequest request)
+    public async Task<IActionResult> Create(CreateMedicineRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -35,7 +35,7 @@ public class MedicinesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(int id)
     {
         var medicine = _medicineService.GetById(id);
         if (medicine == null)
@@ -46,13 +46,13 @@ public class MedicinesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update(int id, UpdateMedicineRequest request)
+    public async Task<IActionResult> Update(int id, UpdateMedicineRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
-        var medicine = _medicineService.Update(id, request);
+        var medicine = await _medicineService.Update(id, request);
         if (medicine == null)
         {
             return NotFound();
