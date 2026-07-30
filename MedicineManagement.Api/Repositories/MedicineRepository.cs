@@ -1,68 +1,22 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 public class MedicineRepository : IMedicineRepository
 {
     private readonly AppDbContext _context;
+    private readonly IMapper _mapper;
+
     public MedicineRepository(AppDbContext context)
     {
         _context = context;
     }
 
-    public async Task<Medicine> GetById(int id)
-    // public  Medicine? GetById(int id)
+    public MedicineRepository(AppDbContext context, IMapper mapper)
     {
-        return await _context.Medicines.FirstOrDefaultAsync(m => m.Id == id);
+        _context = context;
+        _mapper = mapper;
     }
-
-    public async Task<Medicine> Add(CreateMedicineRequest request)
-    {
-        Medicine medicine = new Medicine
-        {
-            Name = request.Name,
-            Stock = request.Stock,
-            Price = request.Price
-        };
-
-        _context.Medicines.Add(medicine);
-        await _context.SaveChangesAsync();
-
-        return medicine;
-    }
-
-    public bool Delete(int id)
-    {
-        Medicine? medicine = _context.Medicines.FirstOrDefault(m => m.Id == id);
-
-        if (medicine == null)
-        {
-            return false;
-        }
-        _context.Medicines.Remove(medicine);
-        _context.SaveChanges();
-        return true;
-    }
-
-    public async Task<Medicine?> Update(int id, UpdateMedicineRequest request)
-    {
-        Medicine? medicine = await _context.Medicines.FirstOrDefaultAsync(m => m.Id == id);
-        if (medicine == null)
-        {
-            return null;
-        }
-
-        medicine.Name = request.Name;
-        medicine.Stock = request.Stock;
-        medicine.Price = request.Price;
-
-
-        // _context.Medicines.Update(medicine);
-        await _context.SaveChangesAsync();
-
-        return medicine;
-    }
-
-    public PagedResult<Medicine> GetAll(MedicineQueryRequest request)
-    // public PagedResult<Medicine> GetAll(int page, int pageSize, string sort)
+    public async Task<PagedResult<Medicine>> GetAll(MedicineQueryRequest request)
     {
         if (request.Page <= 0)
             request.Page = 1;
@@ -72,47 +26,52 @@ public class MedicineRepository : IMedicineRepository
 
         if (string.IsNullOrWhiteSpace(request.Sort))
             request.Sort = "id";
-        int totalData = _context.Medicines.Count();
 
         IQueryable<Medicine> query = _context.Medicines;
+
         // Filter
         if (!string.IsNullOrWhiteSpace(request.Name))
         {
             query = query.Where(m => m.Name.Contains(request.Name));
         }
+
         if (request.MinPrice.HasValue)
         {
             query = query.Where(m => m.Price >= request.MinPrice.Value);
         }
+
         if (request.MaxPrice.HasValue)
         {
             query = query.Where(m => m.Price <= request.MaxPrice.Value);
-
         }
 
-        // Sort / urutkan
-        if (request.Sort.ToLower() == "name")
+        // Total data SETELAH FILTER
+        int totalData = await query.CountAsync();
+
+        // Sorting
+        switch (request.Sort.ToLower())
         {
-            query = query.OrderBy(m => m.Name);
-        }
-        else if (request.Sort.ToLower() == "price")
-        {
-            query = query.OrderBy(m => m.Price);
-        }
-        else if (request.Sort.ToLower() == "stock")
-        {
-            query = query.OrderBy(m => m.Stock);
-        }
-        else
-        {
-            query = query.OrderBy(m => m.Id);
+            case "name":
+                query = query.OrderBy(m => m.Name);
+                break;
+
+            case "price":
+                query = query.OrderBy(m => m.Price);
+                break;
+
+            case "stock":
+                query = query.OrderBy(m => m.Stock);
+                break;
+
+            default:
+                query = query.OrderBy(m => m.Id);
+                break;
         }
 
-
-        List<Medicine> medicines = query
+        List<Medicine> medicines = await query
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .ToList();
+            .ToListAsync();
 
         return new PagedResult<Medicine>
         {
@@ -124,4 +83,61 @@ public class MedicineRepository : IMedicineRepository
         };
     }
 
+    public async Task<Medicine?> GetById(int id)
+    {
+        return await _context.Medicines
+            .FirstOrDefaultAsync(m => m.Id == id);
+    }
+
+    public async Task<Medicine> Add(CreateMedicineRequest request)
+    {
+        Medicine medicine = _mapper.Map<Medicine>(request);
+
+        _context.Medicines.Add(medicine);
+
+        await _context.SaveChangesAsync();
+
+        return medicine;
+    }
+
+    public async Task<Medicine?> Update(int id, UpdateMedicineRequest request)
+    {
+        Medicine? medicine = await _context.Medicines
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (medicine == null)
+        {
+            return null;
+        }
+
+        _mapper.Map(request, medicine);
+
+        await _context.SaveChangesAsync();
+
+        return medicine;
+    }
+
+    public async Task<bool> Delete(int id)
+    {
+        Medicine? medicine = await _context.Medicines
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (medicine == null)
+        {
+            return false;
+        }
+
+        _context.Medicines.Remove(medicine);
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<List<Medicine>> Search(string keyword)
+    {
+        return await _context.Medicines
+            .Where(m => m.Name.Contains(keyword))
+            .ToListAsync();
+    }
 }

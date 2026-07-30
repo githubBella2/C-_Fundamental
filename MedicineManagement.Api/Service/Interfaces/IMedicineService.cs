@@ -1,8 +1,8 @@
-public interface IMedicineRepository
+public interface IMedicineService
 {
     Task<PagedResult<Medicine>> GetAll(MedicineQueryRequest request);
 
-    Task<Medicine?> GetById(int id);
+    Task<MedicineResponse> GetById(int id);
 
     Task<Medicine> Add(CreateMedicineRequest request);
 
@@ -11,4 +11,6 @@ public interface IMedicineRepository
     Task<bool> Delete(int id);
 
     Task<List<Medicine>> Search(string keyword);
+
+
 }
