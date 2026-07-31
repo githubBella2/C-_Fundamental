@@ -2,7 +2,7 @@ public interface IMedicineService
 {
     Task<PagedResult<Medicine>> GetAll(MedicineQueryRequest request);
 
-    Task<MedicineResponse> GetById(int id);
+    Task<MedicineResponse?> GetById(int id);
 
     Task<Medicine> Add(CreateMedicineRequest request);
 

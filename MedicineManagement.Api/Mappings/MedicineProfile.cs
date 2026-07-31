@@ -7,5 +7,7 @@ public class MedicineProfile:Profile
         CreateMap<CreateMedicineRequest, Medicine>();
         CreateMap<UpdateMedicineRequest, Medicine>();
         CreateMap<Medicine, MedicineResponse>();
+
+        CreateMap<CreateCategoryRequest, Category>();
     }
 }

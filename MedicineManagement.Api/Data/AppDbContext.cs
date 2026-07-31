@@ -7,4 +7,5 @@ public class AppDbContext : DbContext
     }
     // Membuat table Medicine
     public DbSet<Medicine> Medicines { get; set; }
+    public DbSet<Category> Categories {get;set;}
 }
